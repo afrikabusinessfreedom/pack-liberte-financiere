@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Paiement — Pack Liberté Financière</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Serif+Display&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --green: #1D9E75;
+      --green-light: #E1F5EE;
+      --green-dark: #085041;
+      --orange: #E8650A;
+      --orange-light: #FFF0E0;
+      --blue: #185FA5;
+      --blue-light: #E6F1FB;
+      --yellow: #B8860B;
+      --yellow-light: #FFFBE0;
+      --teal: #0F6E56;
+      --teal-light: #E1F5EE;
+      --text: #1a1a1a;
+      --text-muted: #6b6b6b;
+      --border: rgba(0,0,0,0.10);
+      --border-strong: rgba(0,0,0,0.18);
+      --bg: #F7F6F2;
+      --surface: #ffffff;
+      --radius: 14px;
+      --radius-sm: 8px;
+    }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 2rem 1rem 4rem;
+    }
+
+    .page { max-width: 540px; margin: 0 auto; }
+
+    /* Header */
+    .header { text-align: center; margin-bottom: 2rem; }
+    .header-badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: var(--green-light); color: var(--green-dark);
+      font-size: 12px; font-weight: 500; padding: 5px 14px;
+      border-radius: 99px; margin-bottom: 1.2rem;
+    }
+    .header-badge svg { width: 14px; height: 14px; }
+    .header-title {
+      font-family: 'DM Serif Display', serif;
+      font-size: 28px; line-height: 1.2;
+      color: var(--text); margin-bottom: 6px;
+    }
+    .header-sub { font-size: 15px; color: var(--text-muted); }
+
+    /* Amount box */
+    .amount-box {
+      background: var(--green);
+      border-radius: var(--radius);
+      padding: 1.5rem;
+      text-align: center;
+      margin-bottom: 1.5rem;
+      position: relative;
+      overflow: hidden;
+    }
+    .amount-box::before {
+      content: '';
+      position: absolute; top: -30px; right: -30px;
+      width: 120px; height: 120px;
+      background: rgba(255,255,255,0.08);
+      border-radius: 50%;
+    }
+    .amount-box::after {
+      content: '';
+      position: absolute; bottom: -20px; left: -20px;
+      width: 80px; height: 80px;
+      background: rgba(255,255,255,0.06);
+      border-radius: 50%;
+    }
+    .amount-label { font-size: 13px; color: rgba(255,255,255,0.75); margin-bottom: 4px; }
+    .amount-value { font-family: 'DM Serif Display', serif; font-size: 40px; color: #fff; margin-bottom: 4px; }
+    .amount-desc { font-size: 13px; color: rgba(255,255,255,0.75); }
+
+    /* Section title */
+    .section-label {
+      font-size: 11px; font-weight: 600; letter-spacing: 0.08em;
+      text-transform: uppercase; color: var(--text-muted);
+      margin-bottom: 10px;
+    }
+
+    /* Method cards */
+    .method-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      margin-bottom: 10px;
+      overflow: hidden;
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+    .method-card:hover { border-color: var(--border-strong); }
+    .method-card.active { border: 2px solid var(--green); }
+
+    .method-trigger {
+      width: 100%; background: none; border: none;
+      padding: 1rem 1.25rem; cursor: pointer;
+      display: flex; align-items: center; gap: 12px;
+      text-align: left;
+    }
+    .method-icon {
+      width: 40px; height: 40px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .method-icon svg { width: 20px; height: 20px; }
+    .icon-orange { background: var(--orange-light); color: var(--orange); }
+    .icon-wave   { background: var(--blue-light);   color: var(--blue); }
+    .icon-mtn    { background: var(--yellow-light);  color: var(--yellow); }
+    .icon-moov   { background: var(--teal-light);    color: var(--teal); }
+
+    .method-info { flex: 1; }
+    .method-name { font-size: 15px; font-weight: 500; color: var(--text); }
+    .method-countries { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+    .method-chevron { color: var(--text-muted); transition: transform 0.2s; flex-shrink: 0; }
+    .method-card.active .method-chevron { transform: rotate(180deg); }
+
+    .method-body {
+      display: none;
+      padding: 0 1.25rem 1.25rem;
+      border-top: 1px solid var(--border);
+      margin-top: 0;
+    }
+    .method-card.active .method-body { display: block; }
+
+    /* Steps */
+    .steps { list-style: none; padding: 1rem 0 0; }
+    .step { display: flex; gap: 10px; margin-bottom: 10px; font-size: 14px; color: var(--text); line-height: 1.5; }
+    .step-num {
+      width: 22px; height: 22px; border-radius: 50%;
+      background: var(--green-light); color: var(--green-dark);
+      font-size: 11px; font-weight: 600;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0; margin-top: 1px;
+    }
+    strong { font-weight: 600; }
+
+    /* Info box */
+    .info-box {
+      background: var(--bg);
+      border-radius: var(--radius-sm);
+      padding: 10px 14px;
+      margin-top: 10px;
+    }
+    .info-box-label { font-size: 11px; color: var(--text-muted); margin-bottom: 3px; }
+    .info-box-value {
+      font-size: 16px; font-weight: 500; color: var(--text);
+      display: flex; align-items: center; justify-content: space-between; gap: 8px;
+    }
+    .copy-btn {
+      font-size: 12px; padding: 4px 12px;
+      border-radius: 6px; border: 1px solid var(--border-strong);
+      background: var(--surface); color: var(--text-muted);
+      cursor: pointer; white-space: nowrap; transition: background 0.1s;
+    }
+    .copy-btn:hover { background: var(--bg); }
+
+    /* Divider */
+    .divider { border: none; border-top: 1px solid var(--border); margin: 1.5rem 0; }
+
+    /* Confirmation */
+    .confirm-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.25rem;
+    }
+    .field { margin-bottom: 14px; }
+    .field label { font-size: 13px; color: var(--text-muted); display: block; margin-bottom: 5px; }
+    .field input {
+      width: 100%; padding: 10px 14px;
+      border: 1px solid var(--border-strong);
+      border-radius: var(--radius-sm);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 15px; color: var(--text);
+      background: var(--surface);
+      outline: none; transition: border-color 0.15s;
+    }
+    .field input:focus { border-color: var(--green); }
+    .confirm-note {
+      font-size: 13px; color: var(--text-muted);
+      line-height: 1.6; margin: 8px 0 16px;
+      padding: 10px 12px;
+      background: #FFFBE0;
+      border-radius: var(--radius-sm);
+      border-left: 3px solid #E8A700;
+    }
+    .submit-btn {
+      width: 100%; padding: 13px;
+      border-radius: var(--radius-sm);
+      background: var(--green); border: none;
+      color: #fff; font-family: 'DM Sans', sans-serif;
+      font-size: 15px; font-weight: 600;
+      cursor: pointer; transition: opacity 0.15s;
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+    }
+    .submit-btn:hover { opacity: 0.9; }
+    .submit-btn svg { width: 18px; height: 18px; }
+
+    .success-banner {
+      display: none;
+      margin-top: 12px;
+      background: var(--green-light);
+      color: var(--green-dark);
+      border-radius: var(--radius-sm);
+      padding: 12px 16px;
+      font-size: 14px; text-align: center; line-height: 1.5;
+    }
+
+    /* Footer */
+    .footer {
+      text-align: center;
+      font-size: 12px; color: var(--text-muted);
+      line-height: 1.8; margin-top: 1.5rem;
+    }
+    .footer a { color: var(--green); text-decoration: none; }
+
+    @media (max-width: 480px) {
+      .header-title { font-size: 24px; }
+      .amount-value { font-size: 34px; }
+    }
+  </style>
+</head>
+<body>
+<main class="page">
+
+  <header class="header">
+    <div class="header-badge">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+      Paiement sécurisé
+    </div>
+    <h1 class="header-title">Pack Liberté Financière</h1>
+    <p class="header-sub">Finalisez votre commande en quelques minutes</p>
+  </header>
+
+  <div class="amount-box">
+    <p class="amount-label">Montant à payer</p>
+    <p class="amount-value">XX XXX FCFA</p>
+    <p class="amount-desc">Pack complet · Livraison immédiate par email</p>
+  </div>
+
+  <p class="section-label">Choisissez votre méthode de paiement</p>
+
+  <!-- Orange Money -->
+  <div class="method-card" id="card-orange">
+    <button class="method-trigger" onclick="toggle('orange')" aria-expanded="false">
+      <div class="method-icon icon-orange">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12" y2="18.01"/></svg>
+      </div>
+      <div class="method-info">
+        <div class="method-name">Orange Money</div>
+        <div class="method-countries">Sénégal · Côte d'Ivoire · Cameroun · Mali · Burkina</div>
+      </div>
+      <svg class="method-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><polyline points="6 9 12 15 18 9"/></svg>
+    </button>
+    <div class="method-body">
+      <ul class="steps">
+        <li class="step"><span class="step-num">1</span><span>Ouvrez l'app Orange Money ou composez <strong>#144#</strong> sur votre téléphone</span></li>
+        <li class="step"><span class="step-num">2</span><span>Sélectionnez <strong>"Transfert d'argent"</strong> → <strong>"Envoyer de l'argent"</strong></span></li>
+        <li class="step"><span class="step-num">3</span><span>Entrez le numéro ci-dessous, saisissez le montant exact et confirmez</span></li>
+      </ul>
+      <div class="info-box">
+        <div class="info-box-label">Numéro Orange Money</div>
+        <div class="info-box-value">
+          <span>+XXX XX XX XX XX</span>
+          <button class="copy-btn" onclick="copyText('+XXX XX XX XX XX', this)">Copier</button>
+        </div>
+      </div>
+      <div class="info-box" style="margin-top:8px;">
+        <div class="info-box-label">Nom du destinataire</div>
+        <div class="info-box-value">[VOTRE NOM ICI]</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Wave -->
+  <div class="method-card" id="card-wave">
+    <button class="method-trigger" onclick="toggle('wave')" aria-expanded="false">
+      <div class="method-icon icon-wave">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12s2-4 5-4 5 8 10 8 5-4 5-4"/></svg>
+      </div>
+      <div class="method-info">
+        <div class="method-name">Wave</div>
+        <div class="method-countries">Sénégal · Côte d'Ivoire · Mali · Burkina Faso</div>
+      </div>
+      <svg class="method-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><polyline points="6 9 12 15 18 9"/></svg>
+    </button>
+    <div class="method-body">
+      <ul class="steps">
+        <li class="step"><span class="step-num">1</span><span>Ouvrez l'application <strong>Wave</strong> sur votre téléphone</span></li>
+        <li class="step"><span class="step-num">2</span><span>Appuyez sur <strong>"Envoyer"</strong> et entrez le numéro du destinataire</span></li>
+        <li class="step"><span class="step-num">3</span><span>Entrez le montant exact et validez avec votre <strong>code PIN</strong></span></li>
+      </ul>
+      <div class="info-box">
+        <div class="info-box-label">Numéro Wave</div>
+        <div class="info-box-value">
+          <span>+XXX XX XX XX XX</span>
+          <button class="copy-btn" onclick="copyText('+XXX XX XX XX XX', this)">Copier</button>
+        </div>
+      </div>
+      <div class="info-box" style="margin-top:8px;">
+        <div class="info-box-label">Nom du destinataire</div>
+        <div class="info-box-value">[VOTRE NOM ICI]</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MTN -->
+  <div class="method-card" id="card-mtn">
+    <button class="method-trigger" onclick="toggle('mtn')" aria-expanded="false">
+      <div class="method-icon icon-mtn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="9" y1="7" x2="15" y2="7"/><line x1="9" y1="11" x2="15" y2="11"/></svg>
+      </div>
+      <div class="method-info">
+        <div class="method-name">MTN Mobile Money</div>
+        <div class="method-countries">Côte d'Ivoire · Cameroun · Ghana · Bénin</div>
+      </div>
+      <svg class="method-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><polyline points="6 9 12 15 18 9"/></svg>
+    </button>
+    <div class="method-body">
+      <ul class="steps">
+        <li class="step"><span class="step-num">1</span><span>Composez <strong>*133#</strong> ou ouvrez l'application <strong>MTN MoMo</strong></span></li>
+        <li class="step"><span class="step-num">2</span><span>Choisissez <strong>"Transfert"</strong> puis entrez le numéro destinataire</span></li>
+        <li class="step"><span class="step-num">3</span><span>Entrez le montant exact et confirmez avec votre <strong>code PIN</strong></span></li>
+      </ul>
+      <div class="info-box">
+        <div class="info-box-label">Numéro MTN MoMo</div>
+        <div class="info-box-value">
+          <span>+XXX XX XX XX XX</span>
+          <button class="copy-btn" onclick="copyText('+XXX XX XX XX XX', this)">Copier</button>
+        </div>
+      </div>
+      <div class="info-box" style="margin-top:8px;">
+        <div class="info-box-label">Nom du destinataire</div>
+        <div class="info-box-value">[VOTRE NOM ICI]</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Moov -->
+  <div class="method-card" id="card-moov">
+    <button class="method-trigger" onclick="toggle('moov')" aria-expanded="false">
+      <div class="method-icon icon-moov">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2"/><circle cx="12" cy="15" r="2"/></svg>
+      </div>
+      <div class="method-info">
+        <div class="method-name">Moov Money</div>
+        <div class="method-countries">Côte d'Ivoire · Bénin · Togo · Burkina · Niger</div>
+      </div>
+      <svg class="method-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><polyline points="6 9 12 15 18 9"/></svg>
+    </button>
+    <div class="method-body">
+      <ul class="steps">
+        <li class="step"><span class="step-num">1</span><span>Composez <strong>*555#</strong> ou ouvrez l'application <strong>Flooz / Moov Money</strong></span></li>
+        <li class="step"><span class="step-num">2</span><span>Sélectionnez <strong>"Transfert"</strong> puis entrez le numéro destinataire</span></li>
+        <li class="step"><span class="step-num">3</span><span>Entrez le montant et validez avec votre <strong>code secret</strong></span></li>
+      </ul>
+      <div class="info-box">
+        <div class="info-box-label">Numéro Moov Money</div>
+        <div class="info-box-value">
+          <span>+XXX XX XX XX XX</span>
+          <button class="copy-btn" onclick="copyText('+XXX XX XX XX XX', this)">Copier</button>
+        </div>
+      </div>
+      <div class="info-box" style="margin-top:8px;">
+        <div class="info-box-label">Nom du destinataire</div>
+        <div class="info-box-value">[VOTRE NOM ICI]</div>
+      </div>
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <p class="section-label">Confirmer votre paiement</p>
+  <div class="confirm-card">
+    <div class="field">
+      <label>Votre numéro de téléphone (utilisé pour le paiement)</label>
+      <input type="tel" id="phone" placeholder="Ex : +221 77 000 00 00">
+    </div>
+    <div class="field">
+      <label>Votre adresse email (pour recevoir le pack)</label>
+      <input type="email" id="email" placeholder="votre@email.com">
+    </div>
+    <p class="confirm-note">
+      ⚠️ Après votre paiement, envoyez la <strong>capture d'écran de confirmation</strong> par WhatsApp au <strong>[VOTRE NUMÉRO WHATSAPP]</strong>. Votre pack sera livré sous <strong>24h</strong>.
+    </p>
+    <button class="submit-btn" onclick="sendConfirm()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+      J'ai effectué mon paiement
+    </button>
+    <div class="success-banner" id="success-banner">
+      ✅ Merci ! Votre confirmation a bien été reçue.<br>Vous recevrez votre pack très bientôt. Pensez à envoyer votre capture d'écran sur WhatsApp.
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <footer class="footer">
+    🔒 Paiement 100% manuel et sécurisé · Livraison par email sous 24h<br>
+    Des questions ? Écrivez-nous sur WhatsApp : <a href="https://wa.me/XXXXXXXXXXX">[VOTRE NUMÉRO WHATSAPP]</a>
+  </footer>
+
+</main>
+
+<script>
+  function toggle(id) {
+    const card = document.getElementById('card-' + id);
+    const isActive = card.classList.contains('active');
+    document.querySelectorAll('.method-card').forEach(c => c.classList.remove('active'));
+    if (!isActive) card.classList.add('active');
+  }
+
+  function copyText(text, btn) {
+    navigator.clipboard.writeText(text).then(() => {
+      const orig = btn.textContent;
+      btn.textContent = 'Copié !';
+      btn.style.color = '#1D9E75';
+      setTimeout(() => {
+        btn.textContent = orig;
+        btn.style.color = '';
+      }, 1800);
+    });
+  }
+
+  function sendConfirm() {
+    const phone = document.getElementById('phone').value.trim();
+    const email = document.getElementById('email').value.trim();
+    if (!phone || !email) {
+      alert('Veuillez remplir votre numéro de téléphone et votre adresse email.');
+      return;
+    }
+    document.getElementById('success-banner').style.display = 'block';
+    document.querySelector('.submit-btn').disabled = true;
+    document.querySelector('.submit-btn').style.opacity = '0.6';
+  }
+</script>
+</body>
+</html>
